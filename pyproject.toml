@@ -1,0 +1,33 @@
+[project]
+name = "clinical-ai-pipeline"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "anukjose", email = "anukjose6@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "boto3>=1.43.97",
+    "langchain>=1.4.6",
+    "langchain-openai>=1.7.2",
+    "loguru>=0.7.3",
+    "openai>=3.31.0",
+    "pgvector>=0.5.1",
+    "psycopg[binary]>=3.3.6",
+    "pydantic-settings>=2.15.0",
+    "python-dotenv>=1.2.3",
+]
+
+[project.scripts]
+clinical-ai-pipeline = "clinical_ai_pipeline:main"
+
+[build-system]
+requires = ["uv_build>=0.12.9,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "black>=26.5.1",
+    "pytest>=9.1.1",
+]
