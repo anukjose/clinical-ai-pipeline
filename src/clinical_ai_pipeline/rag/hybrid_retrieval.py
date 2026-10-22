@@ -4,6 +4,7 @@ import logging
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator
+from clinical_ai_pipeline.rag.reranker import rerank_chunks
 
 from clinical_ai_pipeline.retrieval.models import RetrievalRequest
 from clinical_ai_pipeline.services.embedding_service import EmbeddingService
@@ -155,24 +156,32 @@ class HybridRetrievalService:
             source_table=request.source_table,
         )
 
-        results = reciprocal_rank_fusion(
+        # Combine semantic and keyword results using Reciprocal Rank Fusion.
+
+        fused_chunks = reciprocal_rank_fusion(
             semantic_rows=semantic_rows,
             keyword_rows=keyword_rows,
+            limit=candidate_limit,
+        )
+
+        # Rerank the fused candidates against the original user query.
+        reranked_chunks = rerank_chunks(
+            query=query,
+            chunks=fused_chunks,
             limit=request.limit,
         )
 
         logger.info(
-            "Hybrid clinical retrieval completed | "
-            "consultation_id=%s | semantic_results=%s | "
-            "keyword_results=%s | fused_results=%s",
-            request.consultation_id,
+            "Hybrid retrieval and reranking completed: "
+            "semantic=%s keyword=%s fused=%s final=%s",
             len(semantic_rows),
             len(keyword_rows),
-            len(results),
+            len(fused_chunks),
+            len(reranked_chunks),
         )
 
         return HybridRetrievalResponse(
             query=query,
-            results=results,
-            result_count=len(results),
+            results=reranked_chunks,
+            result_count=len(reranked_chunks),
         )
